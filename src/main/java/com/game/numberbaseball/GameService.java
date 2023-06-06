@@ -2,6 +2,7 @@ package com.game.numberbaseball;
 
 import com.game.numberbaseball.dto.request.GameAnswerRequest;
 import com.game.numberbaseball.dto.response.GameAnswerResponse;
+import com.game.numberbaseball.dto.response.GameResultResponse;
 import com.game.numberbaseball.dto.response.GameStartResponse;
 import com.game.numberbaseball.entity.Game;
 import com.game.numberbaseball.entity.History;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Random;
 @Transactional
 @RequiredArgsConstructor
@@ -36,9 +38,20 @@ public class GameService {
         return verifyAnswer(game, request.getAnswer(), game.getAnswer());
     }
 
+    public GameResultResponse checkGameResult(final Long roomId) {
+        Game game = findByIdOrElseThrow(roomId);
+        List<History> histories = findByGameIdOrElseThrow(roomId);
+        return new GameResultResponse(game.getRemainingCount(), histories.size());
+    }
+
     private Game findByIdOrElseThrow(final Long roomId) {
         return gameRepository.findById(roomId).orElseThrow(
                 () -> new NullPointerException());
+    }
+
+    private List<History> findByGameIdOrElseThrow(final Long roomId) {
+        return historyRepository.findByGameId(roomId).orElseThrow(
+            () -> new NullPointerException());
     }
 
     private GameAnswerResponse verifyAnswer(final Game game, final String prediction, final String answer) {
